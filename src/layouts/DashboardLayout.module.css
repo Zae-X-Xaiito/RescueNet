@@ -1,0 +1,14 @@
+.container {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--color-bg-root);
+}
+
+.main {
+    flex: 1;
+    margin-left: 260px;
+    /* Match sidebar width */
+    padding: 32px;
+    overflow-y: auto;
+    min-height: 100vh;
+}

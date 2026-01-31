@@ -1,0 +1,85 @@
+:root {
+  /* Core Palette - Dark Mode Focus */
+  --color-bg-root: #0f172a; /* Slate 900 */
+  --color-bg-surface: #1e293b; /* Slate 800 */
+  --color-bg-surface-glass: rgba(30, 41, 59, 0.7);
+  --color-bg-elevated: #334155; /* Slate 700 */
+
+  /* Text */
+  --color-text-primary: #f8fafc; /* Slate 50 */
+  --color-text-secondary: #94a3b8; /* Slate 400 */
+  --color-text-muted: #64748b; /* Slate 500 */
+
+  /* Brand / Accents */
+  --color-primary: #3b82f6; /* Blue 500 */
+  --color-primary-hover: #2563eb; /* Blue 600 */
+  --color-accent: #0ea5e9; /* Sky 500 */
+
+  /* Emergency Indicators (High Contrast) */
+  --color-severity-critical: #ef4444; /* Red 500 */
+  --color-severity-high: #f97316; /* Orange 500 */
+  --color-severity-medium: #eab308; /* Yellow 500 */
+  --color-severity-low: #22c55e; /* Green 500 */
+
+  /* Status */
+  --color-status-success: #10b981; /* Emerald 500 */
+  --color-status-error: #f43f5e; /* Rose 500 */
+  --color-status-warning: #f59e0b; /* Amber 500 */
+  --color-status-info: #3b82f6; /* Blue 500 */
+
+  /* Borders & Dividers */
+  --color-border: #334155; /* Slate 700 */
+  --color-border-subtle: #1e293b;
+
+  /* Glassmorphism */
+  --glass-blur: 12px;
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+body {
+  background-color: var(--color-bg-root);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-root);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-bg-elevated);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Utilities */
+.glass-panel {
+  background: var(--color-bg-surface-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: var(--glass-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-md);
+}
+
+.text-critical { color: var(--color-severity-critical); }
+.text-high { color: var(--color-severity-high); }
+.text-medium { color: var(--color-severity-medium); }
+.text-low { color: var(--color-severity-low); }
+
+.bg-critical { background-color: var(--color-severity-critical); color: white; }
+.bg-high { background-color: var(--color-severity-high); color: white; }
+.bg-medium { background-color: var(--color-severity-medium); color: black; }
+.bg-low { background-color: var(--color-severity-low); color: white; }
