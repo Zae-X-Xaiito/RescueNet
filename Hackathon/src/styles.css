@@ -1,0 +1,101 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Core Colors */
+    --color-bg-primary: #0a0e14;
+    --color-bg-secondary: #141922;
+    --color-bg-tertiary: #1e2531;
+    --color-bg-elevated: #252d3d;
+    
+    /* Text */
+    --color-text-primary: #e8eaed;
+    --color-text-secondary: #9ca3af;
+    --color-text-tertiary: #6b7280;
+    
+    /* Status Colors */
+    --color-critical: #ef4444;
+    --color-high: #f97316;
+    --color-medium: #eab308;
+    --color-low: #3b82f6;
+    --color-resolved: #10b981;
+    
+    /* System States */
+    --color-active: #06b6d4;
+    --color-warning: #f59e0b;
+    --color-success: #22c55e;
+    --color-neutral: #64748b;
+    
+    /* Accents */
+    --color-accent-blue: #0ea5e9;
+    --color-accent-purple: #8b5cf6;
+    --color-border: #2d3748;
+    --color-border-light: #3f4a5f;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(6, 182, 212, 0.3);
+    
+    /* Typography */
+    --font-primary: 'Rajdhani', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    
+    /* Spacing */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+}
+
+body {
+    font-family: var(--font-primary);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    overflow-x: hidden;
+    line-height: 1.5;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-neutral);
+}
+
+/* Common utility classes */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 10px rgba(6, 182, 212, 0.4); }
+    50% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.8); }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

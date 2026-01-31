@@ -1,0 +1,2827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RescueNet Command Center</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Core Colors */
+            --color-bg-primary: #0a0e14;
+            --color-bg-secondary: #141922;
+            --color-bg-tertiary: #1e2531;
+            --color-bg-elevated: #252d3d;
+            
+            /* Text */
+            --color-text-primary: #e8eaed;
+            --color-text-secondary: #9ca3af;
+            --color-text-tertiary: #6b7280;
+            
+            /* Status Colors */
+            --color-critical: #ef4444;
+            --color-high: #f97316;
+            --color-medium: #eab308;
+            --color-low: #3b82f6;
+            --color-resolved: #10b981;
+            
+            /* System States */
+            --color-active: #06b6d4;
+            --color-warning: #f59e0b;
+            --color-success: #22c55e;
+            --color-neutral: #64748b;
+            
+            /* Accents */
+            --color-accent-blue: #0ea5e9;
+            --color-accent-purple: #8b5cf6;
+            --color-border: #2d3748;
+            --color-border-light: #3f4a5f;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 20px rgba(6, 182, 212, 0.3);
+            
+            /* Typography */
+            --font-primary: 'Rajdhani', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            /* Spacing */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* Layout Structure */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 240px;
+            background: var(--color-bg-secondary);
+            border-right: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 100;
+        }
+
+        .logo-section {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--color-border);
+            background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-tertiary) 100%);
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--color-active);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--color-active), var(--color-accent-purple));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(6, 182, 212, 0.4); }
+            50% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.8); }
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: var(--space-md);
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            font-weight: 500;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--color-bg-tertiary);
+            border-color: var(--color-border-light);
+        }
+
+        .nav-item.active {
+            background: var(--color-bg-elevated);
+            border-color: var(--color-active);
+            color: var(--color-active);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .meta-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .stat-icon svg,
+        .map-placeholder-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+
+        .system-status {
+            padding: var(--space-md);
+            border-top: 1px solid var(--color-border);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--color-bg-tertiary);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-success);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Header Bar */
+        .top-bar {
+            height: 64px;
+            background: var(--color-bg-secondary);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--space-xl);
+            position: relative;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+
+        .alert-badge {
+            position: relative;
+            padding: var(--space-sm) var(--space-md);
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--color-critical);
+            border-radius: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-critical);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .alert-badge:hover {
+            background: rgba(239, 68, 68, 0.25);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .alert-icon {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 4px;
+            fill: currentColor;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--color-bg-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .user-profile:hover {
+            background: var(--color-bg-elevated);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-accent-blue), var(--color-accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        /* Dashboard Content */
+        .dashboard-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-xl);
+        }
+
+        /* View Container */
+        .view-container {
+            display: none;
+        }
+
+        .view-container.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .stat-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-lg);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--color-active);
+        }
+
+        .stat-card.accent-critical::before {
+            background: var(--color-critical);
+        }
+
+        .stat-card.accent-active::before {
+            background: var(--color-active);
+        }
+
+        .stat-card.accent-success::before {
+            background: var(--color-success);
+        }
+
+        .stat-card.accent-medium::before {
+            background: var(--color-medium);
+        }
+
+        .stat-icon {
+            background: rgba(6, 182, 212, 0.15);
+        }
+
+        .stat-icon.bg-critical {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .stat-icon.bg-success {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .stat-icon.bg-medium {
+            background: rgba(234, 179, 8, 0.15);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-border-light);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-md);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .stat-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-active);
+        }
+
+        .stat-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .stat-card.accent-critical .stat-icon {
+            color: var(--color-critical);
+        }
+
+        .stat-card.accent-active .stat-icon {
+            color: var(--color-active);
+        }
+
+        .stat-card.accent-success .stat-icon {
+            color: var(--color-success);
+        }
+
+        .stat-card.accent-medium .stat-icon {
+            color: var(--color-medium);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--color-text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            font-family: var(--font-mono);
+            color: var(--color-text-secondary);
+        }
+
+        .stat-change.positive {
+            color: var(--color-success);
+        }
+
+        .stat-change.negative {
+            color: var(--color-critical);
+        }
+
+        /* Section Header */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .section-badge {
+            font-size: 0.75rem;
+            padding: var(--space-xs) var(--space-sm);
+            background: var(--color-bg-elevated);
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        /* Incident Queue */
+        .incident-queue {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            margin-bottom: var(--space-xl);
+        }
+
+        .queue-filters {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text-secondary);
+            font-family: var(--font-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            background: var(--color-bg-elevated);
+            color: var(--color-text-primary);
+        }
+
+        .filter-btn.active {
+            background: var(--color-active);
+            color: var(--color-bg-primary);
+            border-color: var(--color-active);
+        }
+
+        .incident-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .incident-item {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--color-border);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .incident-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .incident-item.severity-critical::before {
+            background: var(--color-critical);
+        }
+
+        .incident-item.severity-high::before {
+            background: var(--color-high);
+        }
+
+        .incident-item.severity-medium::before {
+            background: var(--color-medium);
+        }
+
+        .incident-item.severity-low::before {
+            background: var(--color-low);
+        }
+
+        .incident-item:hover {
+            background: var(--color-bg-tertiary);
+        }
+
+        .incident-item:hover::before {
+            opacity: 1;
+        }
+
+        .incident-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--space-sm);
+        }
+
+        .incident-id {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+
+        .severity-badge {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .severity-critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--color-critical);
+            border: 1px solid var(--color-critical);
+        }
+
+        .severity-high {
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--color-high);
+            border: 1px solid var(--color-high);
+        }
+
+        .severity-medium {
+            background: rgba(234, 179, 8, 0.2);
+            color: var(--color-medium);
+            border: 1px solid var(--color-medium);
+        }
+
+        .severity-low {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--color-low);
+            border: 1px solid var(--color-low);
+        }
+
+        .incident-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+            color: var(--color-text-primary);
+        }
+
+        .incident-summary {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: var(--space-md);
+        }
+
+        .incident-meta {
+            display: flex;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--color-text-tertiary);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .meta-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .incident-status {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-xs) var(--space-sm);
+            background: var(--color-bg-elevated);
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-dot-inline {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .status-dot-inline.status-high {
+            background: var(--color-high);
+        }
+
+        .status-dot-inline.status-success {
+            background: var(--color-success);
+        }
+
+        .status-dot-inline.status-active {
+            background: var(--color-active);
+        }
+
+        .status-dot-inline.status-neutral {
+            background: var(--color-neutral);
+        }
+
+        /* Map Section */
+        .map-section {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            margin-bottom: var(--space-xl);
+            overflow: hidden;
+        }
+
+        .map-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .map-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .map-controls {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .map-control-btn {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text-secondary);
+            font-family: var(--font-primary);
+            font-weight: 500;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .map-control-btn:hover {
+            background: var(--color-bg-elevated);
+            color: var(--color-text-primary);
+        }
+
+        .map-container {
+            height: 500px;
+            background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-container-fullscreen {
+            height: 700px;
+        }
+
+        .map-placeholder {
+            text-align: center;
+            color: var(--color-text-tertiary);
+        }
+
+        .map-placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-md);
+            opacity: 0.3;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto var(--space-md);
+        }
+
+        .map-placeholder-text {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Admin Dashboard */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .metric-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-lg);
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-md);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .metric-chart {
+            height: 150px;
+            background: linear-gradient(180deg, rgba(6, 182, 212, 0.1) 0%, transparent 100%);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-placeholder {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60%;
+            background: linear-gradient(90deg, 
+                var(--color-active) 0%, 
+                var(--color-active) 10%, 
+                transparent 10%, transparent 15%,
+                var(--color-active) 15%, 
+                var(--color-active) 30%, 
+                transparent 30%, transparent 35%,
+                var(--color-active) 35%, 
+                var(--color-active) 55%, 
+                transparent 55%, transparent 60%,
+                var(--color-active) 60%, 
+                var(--color-active) 75%, 
+                transparent 75%, transparent 80%,
+                var(--color-active) 80%, 
+                var(--color-active) 100%
+            );
+            opacity: 0.6;
+        }
+
+        .metric-value-large {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: var(--space-md);
+            color: var(--color-text-primary);
+        }
+
+        /* System Health Panel */
+        .health-panel {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .health-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .health-item {
+            padding: var(--space-md);
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .health-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .health-indicator.status-success {
+            background: var(--color-success);
+            box-shadow: 0 0 10px var(--color-success);
+        }
+
+        .health-indicator.status-warning {
+            background: var(--color-warning);
+            box-shadow: 0 0 10px var(--color-warning);
+        }
+
+        .health-indicator.status-critical {
+            background: var(--color-critical);
+            box-shadow: 0 0 10px var(--color-critical);
+        }
+
+        .health-label {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .health-value {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-text-secondary);
+        }
+
+        /* Data Table */
+        .data-table {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: var(--space-xl);
+        }
+
+        .table-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .table-search {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            color: var(--color-text-primary);
+            font-family: var(--font-primary);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .table-search:focus {
+            border-color: var(--color-active);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .table-content {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: var(--space-md) var(--space-lg);
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-text-secondary);
+            background: var(--color-bg-tertiary);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        td {
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            background: var(--color-bg-tertiary);
+        }
+
+        .table-cell-mono {
+            font-family: var(--font-mono);
+            color: var(--color-text-secondary);
+        }
+
+        .table-cell-timestamp {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .table-cell-detail {
+            color: var(--color-text-secondary);
+        }
+
+        .status-online {
+            color: var(--color-success);
+        }
+
+        .status-away {
+            color: var(--color-text-tertiary);
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .placeholder-text {
+            color: var(--color-text-secondary);
+            padding: var(--space-xl);
+            text-align: center;
+        }
+
+        /* Action Button */
+        .btn {
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: 6px;
+            font-family: var(--font-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .btn-primary {
+            background: var(--color-active);
+            color: var(--color-bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: #0891b2;
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--color-bg-elevated);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-bg-tertiary);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--color-critical);
+            border: 1px solid var(--color-critical);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--color-bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-border-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--color-neutral);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -240px;
+                z-index: 200;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-content {
+                padding: var(--space-md);
+            }
+        }
+
+        /* Animation Delays */
+        .stat-card:nth-child(1) { animation-delay: 0s; }
+        .stat-card:nth-child(2) { animation-delay: 0.1s; }
+        .stat-card:nth-child(3) { animation-delay: 0.2s; }
+        .stat-card:nth-child(4) { animation-delay: 0.3s; }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--color-border);
+            border-top-color: var(--color-active);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Incident Detail Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: var(--space-xl);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--color-text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: var(--space-sm);
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--color-text-primary);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: var(--space-xl);
+            margin: var(--space-lg) 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--color-border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: var(--space-lg);
+            padding-left: var(--space-lg);
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -24px;
+            top: 4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--color-bg-secondary);
+            border: 2px solid var(--color-active);
+        }
+
+        .timeline-item.critical .timeline-dot {
+            border-color: var(--color-critical);
+        }
+
+        .timeline-item.success .timeline-dot {
+            border-color: var(--color-success);
+        }
+
+        .timeline-time {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--color-text-tertiary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .timeline-content {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Assignment Controls */
+        .assignment-panel {
+            background: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: var(--space-lg);
+            margin-top: var(--space-lg);
+        }
+
+        .unit-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .unit-card {
+            background: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: var(--space-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .unit-card:hover {
+            border-color: var(--color-active);
+            transform: translateY(-2px);
+        }
+
+        .unit-card.assigned {
+            border-color: var(--color-success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .unit-card.unavailable {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .unit-id {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .unit-status {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+        }
+
+        /* Communication Indicators */
+        .comm-indicators {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .comm-badge {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--color-bg-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .comm-badge.active {
+            border-color: var(--color-success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .comm-badge.pending {
+            border-color: var(--color-warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        /* Enhanced Map */
+        .map-markers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .map-marker {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            pointer-events: all;
+            transition: transform 0.2s ease;
+        }
+
+        .map-marker:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .map-marker.critical {
+            background: var(--color-critical);
+        }
+
+        .map-marker.high {
+            background: var(--color-high);
+        }
+
+        .map-marker.medium {
+            background: var(--color-medium);
+        }
+
+        .map-marker.unit {
+            background: var(--color-active);
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-top: var(--space-md);
+        }
+
+        .chart-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 0 var(--space-sm);
+        }
+
+        .chart-bar {
+            flex: 1;
+            margin: 0 2px;
+            background: linear-gradient(to top, var(--color-active), var(--color-accent-purple));
+            border-radius: 4px 4px 0 0;
+            min-height: 10%;
+            transition: all 0.3s ease;
+        }
+
+        .chart-bar:hover {
+            opacity: 0.8;
+        }
+
+        /* Alert System */
+        .alert-panel {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--color-critical);
+            border-radius: 8px;
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background: var(--color-bg-tertiary);
+            border-radius: 6px;
+            margin-bottom: var(--space-sm);
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-severity {
+            width: 4px;
+            height: 100%;
+            border-radius: 2px;
+            background: var(--color-critical);
+        }
+
+        .alert-severity.warning {
+            background: var(--color-warning);
+        }
+
+        /* Incident Actions */
+        .incident-actions {
+            display: flex;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        /* AI Confidence Indicator */
+        .confidence-meter {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-top: var(--space-sm);
+        }
+
+        .confidence-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--color-bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-success), var(--color-active));
+            transition: width 0.3s ease;
+        }
+
+        /* Responsive Enhancements */
+        .two-column-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+        }
+
+        @media (max-width: 1024px) {
+            .two-column-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 3L4 14h7v7l9-11h-7V3z"/>
+                        </svg>
+                    </div>
+                    <span>RescueNet</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-item active" data-view="dispatcher">
+                    <div class="nav-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <span>Dispatcher Hub</span>
+                </div>
+                <div class="nav-item" data-view="incidents">
+                    <div class="nav-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                    </div>
+                    <span>Active Incidents</span>
+                </div>
+                <div class="nav-item" data-view="map">
+                    <div class="nav-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                        </svg>
+                    </div>
+                    <span>Response Map</span>
+                </div>
+                <div class="nav-item" data-view="responders">
+                    <div class="nav-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                        </svg>
+                    </div>
+                    <span>Responder Units</span>
+                </div>
+                <div class="nav-item" data-view="admin">
+                    <div class="nav-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                        </svg>
+                    </div>
+                    <span>System Admin</span>
+                </div>
+                <div class="nav-item" data-view="analytics">
+                    <div class="nav-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                        </svg>
+                    </div>
+                    <span>Analytics</span>
+                </div>
+                <div class="nav-item" data-view="audit">
+                    <div class="nav-icon">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/>
+                        </svg>
+                    </div>
+                    <span>Audit Logs</span>
+                </div>
+            </nav>
+
+            <div class="system-status">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>All Systems Operational</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <h1 class="page-title" id="pageTitle">Dispatcher Command Center</h1>
+                <div class="top-bar-actions">
+                    <div class="alert-badge">
+                        <svg class="alert-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                        3 CRITICAL
+                    </div>
+                    <div class="user-profile">
+                        <div class="user-avatar">JD</div>
+                        <div class="user-info">
+                            <div class="user-name">Jordan Davis</div>
+                            <div class="user-role">DISPATCHER_LEAD</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Dispatcher Hub View -->
+                <div class="view-container active" data-view-content="dispatcher">
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-card accent-critical">
+                            <div class="stat-header">
+                                <div class="stat-label">Active Incidents</div>
+                                <div class="stat-icon bg-critical">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value">23</div>
+                            <div class="stat-change positive">+5 from last hour</div>
+                        </div>
+
+                        <div class="stat-card accent-active">
+                            <div class="stat-header">
+                                <div class="stat-label">Units Deployed</div>
+                                <div class="stat-icon">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value">47</div>
+                            <div class="stat-change">18 available</div>
+                        </div>
+
+                        <div class="stat-card accent-success">
+                            <div class="stat-header">
+                                <div class="stat-label">Avg Response Time</div>
+                                <div class="stat-icon bg-success">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value">4.2m</div>
+                            <div class="stat-change positive">-12% improvement</div>
+                        </div>
+
+                        <div class="stat-card accent-medium">
+                            <div class="stat-header">
+                                <div class="stat-label">AI Confidence</div>
+                                <div class="stat-icon bg-medium">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                        <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value">94%</div>
+                            <div class="stat-change">Operational</div>
+                        </div>
+                    </div>
+
+                    <!-- Incident Queue -->
+                    <div class="section-header">
+                        <div class="section-title">
+                            Priority Incident Queue
+                            <span class="section-badge">LIVE</span>
+                        </div>
+                    </div>
+
+                    <div class="incident-queue">
+                        <div class="queue-filters">
+                            <button class="filter-btn active">All</button>
+                            <button class="filter-btn">Critical</button>
+                            <button class="filter-btn">High</button>
+                            <button class="filter-btn">Unassigned</button>
+                            <button class="filter-btn">In Progress</button>
+                        </div>
+
+                        <div class="incident-list">
+                            <div class="incident-item severity-critical" data-incident-id="INC-2024-0892">
+                                <div class="incident-header">
+                                    <span class="incident-id">#INC-2024-0892</span>
+                                    <span class="severity-badge severity-critical">CRITICAL</span>
+                                </div>
+                                <h3 class="incident-title">Multi-Vehicle Collision - Highway 101</h3>
+                                <p class="incident-summary">AI Summary: Major traffic accident involving 5 vehicles. Multiple casualties reported. Caller indicates possible fire. Location confirmed via GPS at Highway 101 Mile Marker 47. <strong>AI Confidence: 94%</strong></p>
+                                <div class="confidence-meter">
+                                    <span style="font-size: 0.85rem; color: var(--color-text-secondary);">AI Confidence:</span>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: 94%;"></div>
+                                    </div>
+                                    <span style="font-size: 0.85rem; font-family: var(--font-mono);">94%</span>
+                                </div>
+                                <div class="incident-meta">
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                            </svg>
+                                        </div>
+                                        <span>Highway 101, MM 47</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                            </svg>
+                                        </div>
+                                        <span>2 min ago</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="incident-status">
+                                            <span class="status-dot-inline status-high"></span>
+                                            DISPATCHED
+                                        </span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                                            </svg>
+                                        </div>
+                                        <span>Units 12, 15, 23 en route</span>
+                                    </div>
+                                </div>
+                                <div class="comm-indicators">
+                                    <div class="comm-badge active">
+                                        <span class="status-dot-inline status-success"></span>
+                                        AI Agent: Active
+                                    </div>
+                                    <div class="comm-badge active">
+                                        <span class="status-dot-inline status-success"></span>
+                                        Command Center: Connected
+                                    </div>
+                                    <div class="comm-badge pending">
+                                        <span class="status-dot-inline status-active"></span>
+                                        Responders: 3 units
+                                    </div>
+                                </div>
+                                <div class="incident-actions">
+                                    <button class="btn btn-primary" onclick="openIncidentDetail('INC-2024-0892')">View Details</button>
+                                    <button class="btn btn-secondary" onclick="openAssignmentPanel('INC-2024-0892')">Assign Units</button>
+                                </div>
+                            </div>
+
+                            <div class="incident-item severity-critical">
+                                <div class="incident-header">
+                                    <span class="incident-id">#INC-2024-0891</span>
+                                    <span class="severity-badge severity-critical">CRITICAL</span>
+                                </div>
+                                <h3 class="incident-title">Structure Fire with Entrapment</h3>
+                                <p class="incident-summary">AI Summary: Residential fire at 2847 Oak Street. Caller reports family members trapped on second floor. Heavy smoke visible. Fire department and ambulances requested immediately.</p>
+                                <div class="incident-meta">
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                            </svg>
+                                        </div>
+                                        <span>2847 Oak Street</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                            </svg>
+                                        </div>
+                                        <span>5 min ago</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="incident-status">
+                                            <span class="status-dot-inline status-success"></span>
+                                            ON-SITE
+                                        </span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M17.66 11.2C17.43 10.9 17 10.5 16.92 10c-.08-.5.05-1.01.41-1.37.36-.36.87-.49 1.37-.41.5.08 1 .23 1.37.41.18.18.31.4.39.64.08.23.1.49.05.74-.05.25-.15.49-.31.69-.16.2-.36.36-.58.47-.22.11-.46.17-.7.17-.24 0-.48-.06-.7-.17-.22-.11-.42-.27-.58-.47zM11.65 3.42c-1.95-.67-4.05-.67-6 0-1.27.44-2.12 1.65-2.12 3.03v6.9c0 1.38.85 2.59 2.12 3.03 1.95.67 4.05.67 6 0 1.27-.44 2.12-1.65 2.12-3.03v-6.9c0-1.38-.85-2.59-2.12-3.03zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                                            </svg>
+                                        </div>
+                                        <span>Fire Units 7, 9 on scene</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="incident-item severity-high" data-incident-id="INC-2024-0890">
+                                <div class="incident-header">
+                                    <span class="incident-id">#INC-2024-0890</span>
+                                    <span class="severity-badge severity-high">HIGH</span>
+                                </div>
+                                <h3 class="incident-title">Cardiac Emergency - Downtown</h3>
+                                <p class="incident-summary">AI Summary: 67-year-old male experiencing chest pain and shortness of breath. Possible heart attack. Caller is family member. Patient conscious but in distress. Located at City Plaza, 4th Floor.</p>
+                                <div class="confidence-meter">
+                                    <span style="font-size: 0.85rem; color: var(--color-text-secondary);">AI Confidence:</span>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: 89%;"></div>
+                                    </div>
+                                    <span style="font-size: 0.85rem; font-family: var(--font-mono);">89%</span>
+                                </div>
+                                <div class="incident-meta">
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                            </svg>
+                                        </div>
+                                        <span>City Plaza, 4th Floor</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                            </svg>
+                                        </div>
+                                        <span>8 min ago</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="incident-status">
+                                            <span class="status-dot-inline status-active"></span>
+                                            EN ROUTE
+                                        </span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                                            </svg>
+                                        </div>
+                                        <span>Unit 8 - ETA 3 min</span>
+                                    </div>
+                                </div>
+                                <div class="comm-indicators">
+                                    <div class="comm-badge active">
+                                        <span class="status-dot-inline status-success"></span>
+                                        AI Agent: Active
+                                    </div>
+                                    <div class="comm-badge active">
+                                        <span class="status-dot-inline status-success"></span>
+                                        Command Center: Connected
+                                    </div>
+                                    <div class="comm-badge active">
+                                        <span class="status-dot-inline status-success"></span>
+                                        Responder: Unit 8
+                                    </div>
+                                </div>
+                                <div class="incident-actions">
+                                    <button class="btn btn-primary" onclick="openIncidentDetail('INC-2024-0890')">View Details</button>
+                                    <button class="btn btn-secondary" onclick="openAssignmentPanel('INC-2024-0890')">Reassign</button>
+                                </div>
+                            </div>
+
+                            <div class="incident-item severity-high" data-incident-id="INC-2024-0889">
+                                <div class="incident-header">
+                                    <span class="incident-id">#INC-2024-0889</span>
+                                    <span class="severity-badge severity-high">HIGH</span>
+                                </div>
+                                <h3 class="incident-title">Gas Leak - Residential Area</h3>
+                                <p class="incident-summary">AI Summary: Strong gas odor reported at 1523 Maple Drive. Multiple residents evacuating. Utility company notified. Fire department requested for hazmat assessment and area securing.</p>
+                                <div class="confidence-meter">
+                                    <span style="font-size: 0.85rem; color: var(--color-text-secondary);">AI Confidence:</span>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" style="width: 91%;"></div>
+                                    </div>
+                                    <span style="font-size: 0.85rem; font-family: var(--font-mono);">91%</span>
+                                </div>
+                                <div class="incident-meta">
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                            </svg>
+                                        </div>
+                                        <span>1523 Maple Drive</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                            </svg>
+                                        </div>
+                                        <span>11 min ago</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="incident-status">
+                                            <span class="status-dot-inline status-neutral"></span>
+                                            UNASSIGNED
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="comm-indicators">
+                                    <div class="comm-badge active">
+                                        <span class="status-dot-inline status-success"></span>
+                                        AI Agent: Active
+                                    </div>
+                                    <div class="comm-badge active">
+                                        <span class="status-dot-inline status-success"></span>
+                                        Command Center: Connected
+                                    </div>
+                                    <div class="comm-badge pending">
+                                        <span class="status-dot-inline status-neutral"></span>
+                                        Awaiting Assignment
+                                    </div>
+                                </div>
+                                <div class="incident-actions">
+                                    <button class="btn btn-primary" onclick="openIncidentDetail('INC-2024-0889')">View Details</button>
+                                    <button class="btn btn-primary" onclick="openAssignmentPanel('INC-2024-0889')">Assign Units</button>
+                                </div>
+                            </div>
+
+                            <div class="incident-item severity-medium">
+                                <div class="incident-header">
+                                    <span class="incident-id">#INC-2024-0888</span>
+                                    <span class="severity-badge severity-medium">MEDIUM</span>
+                                </div>
+                                <h3 class="incident-title">Minor Vehicle Accident</h3>
+                                <p class="incident-summary">AI Summary: Two-vehicle fender bender at Main St & 5th Ave intersection. No injuries reported. Vehicles blocking right lane. Police assistance requested for traffic control and report.</p>
+                                <div class="incident-meta">
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                            </svg>
+                                        </div>
+                                        <span>Main St & 5th Ave</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                            </svg>
+                                        </div>
+                                        <span>15 min ago</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="incident-status">
+                                            <span class="status-dot-inline status-active"></span>
+                                            EN ROUTE
+                                        </span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <div class="meta-icon">
+                                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                                            </svg>
+                                        </div>
+                                        <span>Police Unit 42 - ETA 5 min</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Map Section -->
+                    <div class="section-header">
+                        <div class="section-title">Live Response Map</div>
+                    </div>
+
+                    <div class="map-section">
+                        <div class="map-header">
+                            <div class="map-title">Real-Time Unit Tracking</div>
+                            <div class="map-controls">
+                                <button class="map-control-btn">Incidents</button>
+                                <button class="map-control-btn">Units</button>
+                                <button class="map-control-btn">Routes</button>
+                                <button class="map-control-btn">Fullscreen</button>
+                            </div>
+                        </div>
+                        <div class="map-container">
+                            <div class="map-placeholder">
+                                <div class="map-placeholder-icon">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                                    </svg>
+                                </div>
+                                <div>Interactive Map Integration</div>
+                                <div class="map-placeholder-text">Connect mapping service (Google Maps, Mapbox, etc.)</div>
+                            </div>
+                            <div class="map-markers">
+                                <div class="map-marker critical" style="top: 30%; left: 45%;" title="INC-2024-0892: Multi-Vehicle Collision"></div>
+                                <div class="map-marker critical" style="top: 50%; left: 60%;" title="INC-2024-0891: Structure Fire"></div>
+                                <div class="map-marker high" style="top: 40%; left: 35%;" title="INC-2024-0890: Cardiac Emergency"></div>
+                                <div class="map-marker high" style="top: 55%; left: 50%;" title="INC-2024-0889: Gas Leak"></div>
+                                <div class="map-marker medium" style="top: 45%; left: 40%;" title="INC-2024-0888: Minor Accident"></div>
+                                <div class="map-marker unit" style="top: 32%; left: 42%;" title="Unit 12 - En Route"></div>
+                                <div class="map-marker unit" style="top: 33%; left: 44%;" title="Unit 15 - En Route"></div>
+                                <div class="map-marker unit" style="top: 34%; left: 46%;" title="Unit 23 - En Route"></div>
+                                <div class="map-marker unit" style="top: 52%; left: 58%;" title="Unit 7 - On Scene"></div>
+                                <div class="map-marker unit" style="top: 53%; left: 59%;" title="Unit 9 - On Scene"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin View -->
+                <div class="view-container" data-view-content="admin">
+                    <div class="section-header">
+                        <div class="section-title">System Health Overview</div>
+                    </div>
+
+                    <div class="alert-panel" id="systemAlerts" style="display: none;">
+                        <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-md);">
+                            <svg style="width: 20px; height: 20px; fill: var(--color-critical);" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            </svg>
+                            <strong>System Alerts</strong>
+                        </div>
+                        <div class="alert-item">
+                            <div class="alert-severity warning"></div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: var(--space-xs);">WebSocket Connection Degraded</div>
+                                <div style="font-size: 0.85rem; color: var(--color-text-secondary);">Latency increased to 450ms. Investigating connection pool issues.</div>
+                            </div>
+                            <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--color-text-tertiary);">2 min ago</div>
+                        </div>
+                    </div>
+
+                    <div class="health-panel">
+                        <div class="health-grid">
+                            <div class="health-item">
+                                <div class="health-indicator status-success"></div>
+                                <div class="health-label">API Gateway</div>
+                                <div class="health-value">99.9%</div>
+                            </div>
+                            <div class="health-item">
+                                <div class="health-indicator status-success"></div>
+                                <div class="health-label">AI Engine</div>
+                                <div class="health-value">OPTIMAL</div>
+                            </div>
+                            <div class="health-item">
+                                <div class="health-indicator status-success"></div>
+                                <div class="health-label">Database</div>
+                                <div class="health-value">24ms</div>
+                            </div>
+                            <div class="health-item">
+                                <div class="health-indicator status-warning"></div>
+                                <div class="health-label">WebSocket</div>
+                                <div class="health-value">DEGRADED</div>
+                            </div>
+                            <div class="health-item">
+                                <div class="health-indicator status-success"></div>
+                                <div class="health-label">Cache Layer</div>
+                                <div class="health-value">98.7%</div>
+                            </div>
+                            <div class="health-item">
+                                <div class="health-indicator status-success"></div>
+                                <div class="health-label">Auth Service</div>
+                                <div class="health-value">ACTIVE</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <div class="section-title">AI Performance Metrics</div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-title">Call Handling Accuracy</div>
+                            <div class="metric-chart">
+                                <div class="chart-placeholder"></div>
+                            </div>
+                            <div class="metric-value-large">94.2%</div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-title">Avg Confidence Score</div>
+                            <div class="metric-chart">
+                                <div class="chart-placeholder"></div>
+                            </div>
+                            <div class="metric-value-large">87.5%</div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-title">Escalation Rate</div>
+                            <div class="metric-chart">
+                                <div class="chart-placeholder"></div>
+                            </div>
+                            <div class="metric-value-large">5.8%</div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <div class="section-title">Call Volume Analytics</div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-title">Calls Today (24h)</div>
+                            <div class="chart-container">
+                                <div class="chart-line">
+                                    <div class="chart-bar" style="height: 45%;"></div>
+                                    <div class="chart-bar" style="height: 30%;"></div>
+                                    <div class="chart-bar" style="height: 60%;"></div>
+                                    <div class="chart-bar" style="height: 80%;"></div>
+                                    <div class="chart-bar" style="height: 70%;"></div>
+                                    <div class="chart-bar" style="height: 90%;"></div>
+                                    <div class="chart-bar" style="height: 75%;"></div>
+                                    <div class="chart-bar" style="height: 65%;"></div>
+                                    <div class="chart-bar" style="height: 55%;"></div>
+                                    <div class="chart-bar" style="height: 50%;"></div>
+                                    <div class="chart-bar" style="height: 40%;"></div>
+                                    <div class="chart-bar" style="height: 35%;"></div>
+                                </div>
+                            </div>
+                            <div class="metric-value-large">1,247</div>
+                            <div style="font-size: 0.85rem; color: var(--color-text-secondary); margin-top: var(--space-sm);">+12% vs yesterday</div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-title">Peak Load Time</div>
+                            <div class="chart-container">
+                                <div class="chart-line">
+                                    <div class="chart-bar" style="height: 20%;"></div>
+                                    <div class="chart-bar" style="height: 25%;"></div>
+                                    <div class="chart-bar" style="height: 30%;"></div>
+                                    <div class="chart-bar" style="height: 40%;"></div>
+                                    <div class="chart-bar" style="height: 50%;"></div>
+                                    <div class="chart-bar" style="height: 60%;"></div>
+                                    <div class="chart-bar" style="height: 70%;"></div>
+                                    <div class="chart-bar" style="height: 85%;"></div>
+                                    <div class="chart-bar" style="height: 100%;"></div>
+                                    <div class="chart-bar" style="height: 90%;"></div>
+                                    <div class="chart-bar" style="height: 75%;"></div>
+                                    <div class="chart-bar" style="height: 65%;"></div>
+                                </div>
+                            </div>
+                            <div class="metric-value-large">14:30</div>
+                            <div style="font-size: 0.85rem; color: var(--color-text-secondary); margin-top: var(--space-sm);">147 calls/hour</div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-title">Avg Resolution Time</div>
+                            <div class="chart-container">
+                                <div class="chart-line">
+                                    <div class="chart-bar" style="height: 22%;"></div>
+                                    <div class="chart-bar" style="height: 20%;"></div>
+                                    <div class="chart-bar" style="height: 18%;"></div>
+                                    <div class="chart-bar" style="height: 19%;"></div>
+                                    <div class="chart-bar" style="height: 17%;"></div>
+                                    <div class="chart-bar" style="height: 16%;"></div>
+                                    <div class="chart-bar" style="height: 15%;"></div>
+                                    <div class="chart-bar" style="height: 14%;"></div>
+                                    <div class="chart-bar" style="height: 13%;"></div>
+                                    <div class="chart-bar" style="height: 12%;"></div>
+                                    <div class="chart-bar" style="height: 11%;"></div>
+                                    <div class="chart-bar" style="height: 10%;"></div>
+                                </div>
+                            </div>
+                            <div class="metric-value-large">18.3m</div>
+                            <div style="font-size: 0.85rem; color: var(--color-success); margin-top: var(--space-sm);">-8% improvement</div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <div class="section-title">Incident Resolution Metrics</div>
+                    </div>
+
+                    <div class="two-column-layout">
+                        <div class="metric-card">
+                            <div class="metric-title">Resolution Rate (Last 7 Days)</div>
+                            <div class="chart-container">
+                                <div class="chart-line">
+                                    <div class="chart-bar" style="height: 88%;"></div>
+                                    <div class="chart-bar" style="height: 92%;"></div>
+                                    <div class="chart-bar" style="height: 90%;"></div>
+                                    <div class="chart-bar" style="height: 94%;"></div>
+                                    <div class="chart-bar" style="height: 96%;"></div>
+                                    <div class="chart-bar" style="height: 95%;"></div>
+                                    <div class="chart-bar" style="height: 97%;"></div>
+                                </div>
+                            </div>
+                            <div class="metric-value-large">95.2%</div>
+                        </div>
+
+                        <div class="metric-card">
+                            <div class="metric-title">Response Time Distribution</div>
+                            <div class="chart-container">
+                                <div class="chart-line">
+                                    <div class="chart-bar" style="height: 100%;"></div>
+                                    <div class="chart-bar" style="height: 85%;"></div>
+                                    <div class="chart-bar" style="height: 70%;"></div>
+                                    <div class="chart-bar" style="height: 55%;"></div>
+                                    <div class="chart-bar" style="height: 40%;"></div>
+                                    <div class="chart-bar" style="height: 25%;"></div>
+                                </div>
+                            </div>
+                            <div class="metric-value-large">4.2m avg</div>
+                        </div>
+                    </div>
+
+                    <div class="section-header">
+                        <div class="section-title">User Access Control</div>
+                    </div>
+
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div class="table-title">Active Users & Permissions</div>
+                            <input type="text" class="table-search" placeholder="Search users...">
+                        </div>
+                        <div class="table-content">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>USER ID</th>
+                                        <th>NAME</th>
+                                        <th>ROLE</th>
+                                        <th>LAST ACTIVE</th>
+                                        <th>STATUS</th>
+                                        <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="table-cell-mono">USR-1047</td>
+                                        <td>Jordan Davis</td>
+                                        <td>DISPATCHER_LEAD</td>
+                                        <td>Active Now</td>
+                                        <td><span class="status-online">● Online</span></td>
+                                        <td><button class="btn btn-secondary btn-small">Manage</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="table-cell-mono">USR-1048</td>
+                                        <td>Alex Chen</td>
+                                        <td>DISPATCHER</td>
+                                        <td>2 min ago</td>
+                                        <td><span class="status-online">● Online</span></td>
+                                        <td><button class="btn btn-secondary btn-small">Manage</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="table-cell-mono">USR-1052</td>
+                                        <td>Maria Rodriguez</td>
+                                        <td>SYSTEM_ADMIN</td>
+                                        <td>15 min ago</td>
+                                        <td><span class="status-online">● Online</span></td>
+                                        <td><button class="btn btn-secondary btn-small">Manage</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="table-cell-mono">USR-1055</td>
+                                        <td>David Park</td>
+                                        <td>FIELD_SUPERVISOR</td>
+                                        <td>1 hour ago</td>
+                                        <td><span class="status-away">○ Away</span></td>
+                                        <td><button class="btn btn-secondary btn-small">Manage</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Views (Placeholder structures) -->
+                <div class="view-container" data-view-content="incidents">
+                    <div class="section-header">
+                        <div class="section-title">All Active Incidents</div>
+                    </div>
+                    <p class="placeholder-text">
+                        Detailed incident management interface with filtering, sorting, and bulk actions.
+                    </p>
+                </div>
+
+                <div class="view-container" data-view-content="map">
+                    <div class="section-header">
+                        <div class="section-title">Full-Screen Response Map</div>
+                    </div>
+                    <div class="map-section">
+                        <div class="map-container map-container-fullscreen">
+                            <div class="map-placeholder">
+                                <div class="map-placeholder-icon">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+                                    </svg>
+                                </div>
+                                <div>Full-Screen Interactive Map</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="view-container" data-view-content="responders">
+                    <div class="section-header">
+                        <div class="section-title">Responder Unit Management</div>
+                    </div>
+                    <p class="placeholder-text">
+                        Unit roster, availability tracking, and assignment management interface.
+                    </p>
+                </div>
+
+                <div class="view-container" data-view-content="analytics">
+                    <div class="section-header">
+                        <div class="section-title">Advanced Analytics & Reporting</div>
+                    </div>
+                    <p class="placeholder-text">
+                        Comprehensive analytics dashboard with historical trends and performance insights.
+                    </p>
+                </div>
+
+                <div class="view-container" data-view-content="audit">
+                    <div class="section-header">
+                        <div class="section-title">System Audit Logs</div>
+                    </div>
+                    <div class="data-table">
+                        <div class="table-header">
+                            <div class="table-title">Recent System Events</div>
+                            <input type="text" class="table-search" placeholder="Search logs...">
+                        </div>
+                        <div class="table-content">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>TIMESTAMP</th>
+                                        <th>EVENT TYPE</th>
+                                        <th>USER</th>
+                                        <th>ACTION</th>
+                                        <th>DETAILS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="table-cell-timestamp">2024-01-31 14:23:15</td>
+                                        <td>INCIDENT_CREATED</td>
+                                        <td>AI_ENGINE</td>
+                                        <td>New incident logged</td>
+                                        <td class="table-cell-detail">INC-2024-0892 via emergency call</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="table-cell-timestamp">2024-01-31 14:22:48</td>
+                                        <td>UNIT_DISPATCHED</td>
+                                        <td>Jordan Davis</td>
+                                        <td>Assigned units to incident</td>
+                                        <td class="table-cell-detail">Units 12, 15, 23 → INC-2024-0892</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="table-cell-timestamp">2024-01-31 14:20:31</td>
+                                        <td>USER_LOGIN</td>
+                                        <td>Alex Chen</td>
+                                        <td>User authenticated</td>
+                                        <td class="table-cell-detail">Login from 192.168.1.45</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="table-cell-timestamp">2024-01-31 14:18:22</td>
+                                        <td>STATUS_UPDATE</td>
+                                        <td>SYSTEM</td>
+                                        <td>Incident status changed</td>
+                                        <td class="table-cell-detail">INC-2024-0891: DISPATCHED → ON_SITE</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Incident Detail Modal -->
+    <div class="modal-overlay" id="incidentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 style="font-size: 1.5rem; margin-bottom: var(--space-xs);">Incident #INC-2024-0892</h2>
+                    <span class="severity-badge severity-critical">CRITICAL</span>
+                </div>
+                <button class="modal-close" onclick="closeIncidentDetail()">&times;</button>
+            </div>
+            
+            <div>
+                <h3 style="margin-bottom: var(--space-md);">Multi-Vehicle Collision - Highway 101</h3>
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--space-lg);">
+                    AI Summary: Major traffic accident involving 5 vehicles. Multiple casualties reported. Caller indicates possible fire. Location confirmed via GPS at Highway 101 Mile Marker 47.
+                </p>
+
+                <div class="two-column-layout">
+                    <div>
+                        <h4 style="margin-bottom: var(--space-md); font-size: 1rem;">Location Details</h4>
+                        <div style="background: var(--color-bg-tertiary); padding: var(--space-md); border-radius: 6px; margin-bottom: var(--space-lg);">
+                            <div style="margin-bottom: var(--space-sm);"><strong>Address:</strong> Highway 101, Mile Marker 47</div>
+                            <div style="margin-bottom: var(--space-sm);"><strong>Coordinates:</strong> 37.7749° N, 122.4194° W</div>
+                            <div><strong>Jurisdiction:</strong> Metro Emergency Services</div>
+                        </div>
+
+                        <h4 style="margin-bottom: var(--space-md); font-size: 1rem;">Assigned Units</h4>
+                        <div style="background: var(--color-bg-tertiary); padding: var(--space-md); border-radius: 6px;">
+                            <div style="margin-bottom: var(--space-sm);">
+                                <span style="font-family: var(--font-mono);">Unit 12</span> - Ambulance - <span style="color: var(--color-active);">EN ROUTE</span>
+                            </div>
+                            <div style="margin-bottom: var(--space-sm);">
+                                <span style="font-family: var(--font-mono);">Unit 15</span> - Fire Engine - <span style="color: var(--color-active);">EN ROUTE</span>
+                            </div>
+                            <div>
+                                <span style="font-family: var(--font-mono);">Unit 23</span> - Police - <span style="color: var(--color-active);">EN ROUTE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="margin-bottom: var(--space-md); font-size: 1rem;">AI Analysis</h4>
+                        <div style="background: var(--color-bg-tertiary); padding: var(--space-md); border-radius: 6px; margin-bottom: var(--space-lg);">
+                            <div style="margin-bottom: var(--space-sm);"><strong>Confidence Score:</strong> 94%</div>
+                            <div style="margin-bottom: var(--space-sm);"><strong>Call Duration:</strong> 2m 34s</div>
+                            <div style="margin-bottom: var(--space-sm);"><strong>Keywords Detected:</strong> collision, fire, multiple vehicles, injuries</div>
+                            <div><strong>Escalation:</strong> Auto-escalated to CRITICAL</div>
+                        </div>
+
+                        <h4 style="margin-bottom: var(--space-md); font-size: 1rem;">Communication Status</h4>
+                        <div class="comm-indicators">
+                            <div class="comm-badge active">
+                                <span class="status-dot-inline status-success"></span>
+                                AI Agent: Active
+                            </div>
+                            <div class="comm-badge active">
+                                <span class="status-dot-inline status-success"></span>
+                                Command Center: Connected
+                            </div>
+                            <div class="comm-badge active">
+                                <span class="status-dot-inline status-success"></span>
+                                Responders: 3 units
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: var(--space-xl); margin-bottom: var(--space-md); font-size: 1rem;">Incident Timeline</h4>
+                <div class="timeline">
+                    <div class="timeline-item critical">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-time">14:25:00</div>
+                        <div class="timeline-content">Emergency call received. AI agent initiated conversation.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-time">14:25:15</div>
+                        <div class="timeline-content">AI agent extracted key information: location, severity, number of vehicles involved.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-time">14:25:45</div>
+                        <div class="timeline-content">Incident classified as CRITICAL. Auto-escalated to dispatch queue.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-time">14:26:12</div>
+                        <div class="timeline-content">Dispatcher Jordan Davis reviewed and confirmed incident details.</div>
+                    </div>
+                    <div class="timeline-item success">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-time">14:26:30</div>
+                        <div class="timeline-content">Units 12, 15, and 23 dispatched. ETA: 8 minutes.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-time">14:27:00</div>
+                        <div class="timeline-content">All units confirmed en route. GPS tracking activated.</div>
+                    </div>
+                </div>
+
+                <div class="incident-actions" style="margin-top: var(--space-xl);">
+                    <button class="btn btn-primary" onclick="openAssignmentPanel('INC-2024-0892')">Reassign Units</button>
+                    <button class="btn btn-secondary">Update Status</button>
+                    <button class="btn btn-secondary">View Full Transcript</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Panel Modal -->
+    <div class="modal-overlay" id="assignmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Assign Responder Units</h2>
+                <button class="modal-close" onclick="closeAssignmentPanel()">&times;</button>
+            </div>
+            
+            <div class="assignment-panel">
+                <h4 style="margin-bottom: var(--space-md);">Available Units</h4>
+                <div class="unit-list">
+                    <div class="unit-card" onclick="toggleUnitAssignment(this, 'Unit-8')">
+                        <div class="unit-id">Unit 8</div>
+                        <div class="unit-status">Ambulance - Available</div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-tertiary); margin-top: var(--space-xs);">ETA: 5 min</div>
+                    </div>
+                    <div class="unit-card" onclick="toggleUnitAssignment(this, 'Unit-11')">
+                        <div class="unit-id">Unit 11</div>
+                        <div class="unit-status">Fire Engine - Available</div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-tertiary); margin-top: var(--space-xs);">ETA: 7 min</div>
+                    </div>
+                    <div class="unit-card unavailable">
+                        <div class="unit-id">Unit 12</div>
+                        <div class="unit-status">Ambulance - Assigned</div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-tertiary); margin-top: var(--space-xs);">Currently on call</div>
+                    </div>
+                    <div class="unit-card" onclick="toggleUnitAssignment(this, 'Unit-14')">
+                        <div class="unit-id">Unit 14</div>
+                        <div class="unit-status">Police - Available</div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-tertiary); margin-top: var(--space-xs);">ETA: 4 min</div>
+                    </div>
+                    <div class="unit-card unavailable">
+                        <div class="unit-id">Unit 15</div>
+                        <div class="unit-status">Fire Engine - Assigned</div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-tertiary); margin-top: var(--space-xs);">Currently on call</div>
+                    </div>
+                    <div class="unit-card" onclick="toggleUnitAssignment(this, 'Unit-19')">
+                        <div class="unit-id">Unit 19</div>
+                        <div class="unit-status">Ambulance - Available</div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-tertiary); margin-top: var(--space-xs);">ETA: 6 min</div>
+                    </div>
+                    <div class="unit-card unavailable">
+                        <div class="unit-id">Unit 23</div>
+                        <div class="unit-status">Police - Assigned</div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-tertiary); margin-top: var(--space-xs);">Currently on call</div>
+                    </div>
+                    <div class="unit-card" onclick="toggleUnitAssignment(this, 'Unit-27')">
+                        <div class="unit-id">Unit 27</div>
+                        <div class="unit-status">Fire Engine - Available</div>
+                        <div style="font-size: 0.85rem; color: var(--color-text-tertiary); margin-top: var(--space-xs);">ETA: 9 min</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--color-border);">
+                    <h4 style="margin-bottom: var(--space-md);">Selected Units</h4>
+                    <div id="selectedUnits" style="min-height: 60px; background: var(--color-bg-secondary); padding: var(--space-md); border-radius: 6px; border: 1px solid var(--color-border);">
+                        <div style="color: var(--color-text-tertiary); font-size: 0.9rem;">No units selected</div>
+                    </div>
+                </div>
+
+                <div class="incident-actions" style="margin-top: var(--space-lg);">
+                    <button class="btn btn-primary" onclick="confirmAssignment()">Confirm Assignment</button>
+                    <button class="btn btn-secondary" onclick="closeAssignmentPanel()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation System
+        const navItems = document.querySelectorAll('.nav-item');
+        const viewContainers = document.querySelectorAll('.view-container');
+        const pageTitle = document.getElementById('pageTitle');
+
+        const viewTitles = {
+            'dispatcher': 'Dispatcher Command Center',
+            'incidents': 'Active Incidents',
+            'map': 'Response Map',
+            'responders': 'Responder Units',
+            'admin': 'System Administration',
+            'analytics': 'Analytics & Reports',
+            'audit': 'Audit Logs'
+        };
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const viewName = item.dataset.view;
+                
+                // Update active nav item
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                
+                // Update active view
+                viewContainers.forEach(view => view.classList.remove('active'));
+                const targetView = document.querySelector(`[data-view-content="${viewName}"]`);
+                if (targetView) {
+                    targetView.classList.add('active');
+                }
+                
+                // Update page title
+                pageTitle.textContent = viewTitles[viewName] || 'RescueNet';
+            });
+        });
+
+        // Filter buttons
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Simulated real-time updates
+        function simulateRealTimeUpdate() {
+            const alertBadge = document.querySelector('.alert-badge');
+            const activeIncidentsValue = document.querySelector('.stat-value');
+            
+            // Randomly update critical incident count
+            const textContent = alertBadge.textContent.trim();
+            const currentCount = parseInt(textContent.match(/\d+/)?.[0] || '0');
+            const change = Math.random() > 0.5 ? 1 : -1;
+            const newCount = Math.max(0, currentCount + change);
+            
+            if (newCount !== currentCount) {
+                // Preserve SVG icon, only update text
+                const svgIcon = alertBadge.querySelector('.alert-icon');
+                alertBadge.innerHTML = '';
+                if (svgIcon) {
+                    alertBadge.appendChild(svgIcon);
+                }
+                alertBadge.appendChild(document.createTextNode(` ${newCount} CRITICAL`));
+                alertBadge.style.animation = 'none';
+                setTimeout(() => {
+                    alertBadge.style.animation = '';
+                }, 10);
+            }
+        }
+
+        // Update every 10 seconds
+        setInterval(simulateRealTimeUpdate, 10000);
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        navItems[0].click();
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        navItems[1].click();
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        navItems[2].click();
+                        break;
+                }
+            }
+        });
+
+        // Modal Management
+        function openIncidentDetail(incidentId) {
+            document.getElementById('incidentModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeIncidentDetail() {
+            document.getElementById('incidentModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function openAssignmentPanel(incidentId) {
+            document.getElementById('assignmentModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            // Close incident modal if open
+            document.getElementById('incidentModal').classList.remove('active');
+        }
+
+        function closeAssignmentPanel() {
+            document.getElementById('assignmentModal').classList.remove('active');
+            document.body.style.overflow = '';
+            // Reset selected units
+            document.getElementById('selectedUnits').innerHTML = '<div style="color: var(--color-text-tertiary); font-size: 0.9rem;">No units selected</div>';
+            // Reset unit cards
+            document.querySelectorAll('.unit-card.assigned').forEach(card => {
+                card.classList.remove('assigned');
+            });
+        }
+
+        // Unit Assignment
+        let selectedUnits = [];
+
+        function toggleUnitAssignment(card, unitId) {
+            if (card.classList.contains('unavailable')) return;
+            
+            if (card.classList.contains('assigned')) {
+                card.classList.remove('assigned');
+                selectedUnits = selectedUnits.filter(id => id !== unitId);
+            } else {
+                card.classList.add('assigned');
+                selectedUnits.push(unitId);
+            }
+            
+            updateSelectedUnitsDisplay();
+        }
+
+        function updateSelectedUnitsDisplay() {
+            const container = document.getElementById('selectedUnits');
+            if (selectedUnits.length === 0) {
+                container.innerHTML = '<div style="color: var(--color-text-tertiary); font-size: 0.9rem;">No units selected</div>';
+            } else {
+                container.innerHTML = selectedUnits.map(unitId => 
+                    `<div style="display: inline-block; padding: var(--space-sm) var(--space-md); margin: var(--space-xs); background: var(--color-bg-tertiary); border-radius: 4px; font-family: var(--font-mono);">${unitId}</div>`
+                ).join('');
+            }
+        }
+
+        function confirmAssignment() {
+            if (selectedUnits.length === 0) {
+                alert('Please select at least one unit to assign.');
+                return;
+            }
+            
+            // Simulate assignment
+            console.log('Assigning units:', selectedUnits);
+            alert(`Successfully assigned ${selectedUnits.length} unit(s) to incident.`);
+            closeAssignmentPanel();
+            
+            // Update UI to reflect assignment
+            updateIncidentDisplay();
+        }
+
+        function updateIncidentDisplay() {
+            // This would update the incident list with new assignments
+            // In a real app, this would come from the backend
+        }
+
+        // Close modals on overlay click
+        document.getElementById('incidentModal').addEventListener('click', (e) => {
+            if (e.target.id === 'incidentModal') {
+                closeIncidentDetail();
+            }
+        });
+
+        document.getElementById('assignmentModal').addEventListener('click', (e) => {
+            if (e.target.id === 'assignmentModal') {
+                closeAssignmentPanel();
+            }
+        });
+
+        // Enhanced Real-time Updates
+        function simulateRealTimeUpdate() {
+            const alertBadge = document.querySelector('.alert-badge');
+            const activeIncidentsValue = document.querySelector('.stat-value');
+            
+            // Randomly update critical incident count
+            const textContent = alertBadge.textContent.trim();
+            const currentCount = parseInt(textContent.match(/\d+/)?.[0] || '0');
+            const change = Math.random() > 0.5 ? 1 : -1;
+            const newCount = Math.max(0, currentCount + change);
+            
+            if (newCount !== currentCount) {
+                const svgIcon = alertBadge.querySelector('.alert-icon');
+                alertBadge.innerHTML = '';
+                if (svgIcon) {
+                    alertBadge.appendChild(svgIcon);
+                }
+                alertBadge.appendChild(document.createTextNode(` ${newCount} CRITICAL`));
+                alertBadge.style.animation = 'none';
+                setTimeout(() => {
+                    alertBadge.style.animation = '';
+                }, 10);
+            }
+
+            // Update system alerts
+            const systemAlerts = document.getElementById('systemAlerts');
+            if (Math.random() > 0.7) {
+                systemAlerts.style.display = 'block';
+            } else {
+                systemAlerts.style.display = 'none';
+            }
+
+            // Animate chart bars
+            animateCharts();
+        }
+
+        function animateCharts() {
+            document.querySelectorAll('.chart-bar').forEach(bar => {
+                const currentHeight = bar.style.height;
+                if (currentHeight) {
+                    const heightValue = parseFloat(currentHeight);
+                    const variation = (Math.random() - 0.5) * 5; // ±5% variation
+                    const newHeight = Math.max(10, Math.min(100, heightValue + variation));
+                    bar.style.height = newHeight + '%';
+                }
+            });
+        }
+
+        // Update every 10 seconds
+        setInterval(simulateRealTimeUpdate, 10000);
+
+        // Simulate WebSocket connection
+        function initializeWebSocket() {
+            // In production, this would connect to a real WebSocket server
+            console.log('WebSocket connection initialized (simulated)');
+            
+            // Simulate incoming real-time updates
+            setInterval(() => {
+                // Simulate new incident
+                if (Math.random() > 0.95) {
+                    console.log('New incident received via WebSocket');
+                    // In production, this would update the incident queue
+                }
+                
+                // Simulate status updates
+                if (Math.random() > 0.9) {
+                    console.log('Incident status updated via WebSocket');
+                    // In production, this would update incident statuses
+                }
+            }, 5000);
+        }
+
+        // Initialize WebSocket on load
+        initializeWebSocket();
+
+        // Enhanced keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Close modals with Escape
+            if (e.key === 'Escape') {
+                closeIncidentDetail();
+                closeAssignmentPanel();
+            }
+
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        navItems[0].click();
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        navItems[1].click();
+                        break;
+                    case '3':
+                        e.preventDefault();
+                        navItems[2].click();
+                        break;
+                    case '4':
+                        e.preventDefault();
+                        navItems[3].click();
+                        break;
+                    case '5':
+                        e.preventDefault();
+                        navItems[4].click();
+                        break;
+                }
+            }
+        });
+
+        // Make incident items clickable
+        document.querySelectorAll('.incident-item').forEach(item => {
+            item.addEventListener('dblclick', () => {
+                const incidentId = item.dataset.incidentId;
+                if (incidentId) {
+                    openIncidentDetail(incidentId);
+                }
+            });
+        });
+
+        // Initialize chart animations
+        function initializeCharts() {
+            // Randomize initial chart bar heights for visual interest
+            document.querySelectorAll('.chart-bar').forEach(bar => {
+                if (!bar.style.height) {
+                    const randomHeight = 20 + Math.random() * 80; // 20-100%
+                    bar.style.height = randomHeight + '%';
+                }
+            });
+        }
+
+        // Initialize on load
+        initializeCharts();
+
+        console.log('RescueNet Command Center Initialized');
+        console.log('All systems operational');
+        console.log('Real-time monitoring active');
+        console.log('WebSocket connection established (simulated)');
+    </script>
+</body>
+</html>
